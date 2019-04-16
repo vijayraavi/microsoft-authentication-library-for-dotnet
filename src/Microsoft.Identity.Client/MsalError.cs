@@ -193,6 +193,8 @@ namespace Microsoft.Identity.Client
         /// </summary>
         public const string InvalidOwnerWindowType = "invalid_owner_window_type";
 
+        // TODO: InvalidServiceUrl does not seem to be used anywhere?
+
         /// <summary>
         /// Invalid service URL.
         /// </summary>
@@ -205,6 +207,8 @@ namespace Microsoft.Identity.Client
         /// the max possible length for a JWT token.
         /// </summary>
         public const string EncodedTokenTooLong = "encoded_token_too_long";
+
+        // TODO: does not seem to be used in MSAL.NET
 
         /// <summary>
         /// No data from STS.
@@ -439,6 +443,8 @@ namespace Microsoft.Identity.Client
         /// the configured redirect uri.
         /// </summary>
         public const string CustomWebUiRedirectUriMismatch = "custom_webui_invalid_mismatch";
+
+        // TODO: does not seem to be used?
 
         /// <summary>
         /// Access denied.
