@@ -28,6 +28,8 @@
 using System;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client.Cache;
 using Microsoft.Identity.Client.Core;
@@ -55,7 +57,27 @@ namespace Microsoft.Identity.Client.Platforms.netcore
         /// </summary>
         public override Task<string> GetUserPrincipalNameAsync()
         {
-            return Task.FromResult(string.Empty);
+            var builder = new StringBuilder(1024);
+            var userNameSize = builder.Capacity;
+            if (GetUserNameEx(ExtendedNameFormat.UserPrincipal, builder, ref userNameSize) == 0)
+            {
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            }
+            //return builder.ToString();
+            return Task.FromResult(builder.ToString());
+        }
+
+        [DllImport("secur32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern int GetUserNameEx(ExtendedNameFormat nameFormat,
+                                                    StringBuilder userName, ref int userNameSize);
+
+        public enum ExtendedNameFormat
+        {
+            Unknown = 0,
+            /// <summary>
+            /// The user principal name (for example, someone@example.com).
+            /// </summary>
+            UserPrincipal = 8,
         }
 
         public override Task<bool> IsUserLocalAsync(RequestContext requestContext)

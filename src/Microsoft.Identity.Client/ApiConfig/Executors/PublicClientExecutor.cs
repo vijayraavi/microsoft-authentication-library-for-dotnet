@@ -71,11 +71,10 @@ namespace Microsoft.Identity.Client.ApiConfig.Executors
             AcquireTokenByIntegratedWindowsAuthParameters integratedWindowsAuthParameters,
             CancellationToken cancellationToken)
         {
-#if NET_CORE
+#if !DESKTOP
             if (string.IsNullOrWhiteSpace(integratedWindowsAuthParameters.Username))
             {
-                throw new PlatformNotSupportedException("AcquireTokenByIntegratedWindowsAuth is not supported on .net core without adding .WithUsername() because " +
-                    "MSAL cannot determine the username (UPN) of the currently logged in user. Please use .WithUsername() before calling ExecuteAsync(). " +
+                throw new PlatformNotSupportedException("AcquireTokenByIntegratedWindowsAuth is only supported on .net core on windows" +
                     "For more details see https://aka.ms/msal-net-iwa");
             }
 #endif
