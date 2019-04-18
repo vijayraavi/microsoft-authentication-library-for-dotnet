@@ -71,12 +71,14 @@ namespace Microsoft.Identity.Client.ApiConfig.Executors
             AcquireTokenByIntegratedWindowsAuthParameters integratedWindowsAuthParameters,
             CancellationToken cancellationToken)
         {
-#if !DESKTOP
+#if NET_CORE
+#if MAC || LINUX
             if (string.IsNullOrWhiteSpace(integratedWindowsAuthParameters.Username))
             {
                 throw new PlatformNotSupportedException("AcquireTokenByIntegratedWindowsAuth is only supported on .net core on windows" +
                     "For more details see https://aka.ms/msal-net-iwa");
             }
+#endif 
 #endif
             var requestContext = CreateRequestContextAndLogVersionInfo(commonParameters.TelemetryCorrelationId);
 
