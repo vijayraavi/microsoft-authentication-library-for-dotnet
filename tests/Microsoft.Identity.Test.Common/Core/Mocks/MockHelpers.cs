@@ -1,29 +1,5 @@
-﻿//----------------------------------------------------------------------
-//
-// Copyright (c) Microsoft Corporation.
-// All rights reserved.
-//
-// This code is licensed under the MIT License.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files(the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions :
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
-//------------------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
 using System.Globalization;
@@ -140,7 +116,7 @@ namespace Microsoft.Identity.Test.Common.Core.Mocks
                 foci ? FociTokenResponse : DefaultTokenResponse);
         }
 
-        public static HttpResponseMessage CreateInvalidGrantTokenResponseMessage()
+        public static HttpResponseMessage CreateInvalidGrantTokenResponseMessage(string subError = null)
         {
             return CreateFailureMessage(HttpStatusCode.BadRequest,
                 "{\"error\":\"invalid_grant\",\"error_description\":\"AADSTS70002: Error " +
@@ -148,7 +124,9 @@ namespace Microsoft.Identity.Test.Common.Core.Mocks
                 "or revoked.Trace ID: f7ec686c-9196-4220-a754-cd9197de44e9Correlation ID: " +
                 "04bb0cae-580b-49ac-9a10-b6c3316b1eaaTimestamp: 2015-09-16 07:24:55Z\"," +
                 "\"error_codes\":[70002,70008],\"timestamp\":\"2015-09-16 07:24:55Z\"," +
-                "\"trace_id\":\"f7ec686c-9196-4220-a754-cd9197de44e9\",\"correlation_id\":" +
+                "\"trace_id\":\"f7ec686c-9196-4220-a754-cd9197de44e9\"," +
+                (subError != null ? ("\"suberror\":" + "\"" + subError + "\",") : "") +
+                "\"correlation_id\":" +
                 "\"04bb0cae-580b-49ac-9a10-b6c3316b1eaa\"}");
         }
 
@@ -176,7 +154,7 @@ namespace Microsoft.Identity.Test.Common.Core.Mocks
                                         "\"trace_id\":\"dd25f4fb-3e8d-458e-90e7-179524ce0000\",\"correlation_id\":" +
                                         "\"f11508ab-067f-40d4-83cb-ccc67bf57e45\"}");
         }
-        
+
         public static HttpResponseMessage CreateHttpStatusNotFoundResponseMessage()
         {
             return CreateFailureMessage(HttpStatusCode.NotFound,
