@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client.ApiConfig.Parameters;
@@ -71,15 +72,18 @@ namespace Microsoft.Identity.Client.ApiConfig.Executors
             AcquireTokenByIntegratedWindowsAuthParameters integratedWindowsAuthParameters,
             CancellationToken cancellationToken)
         {
+
 #if NET_CORE
-#if MAC || LINUX
-            if (string.IsNullOrWhiteSpace(integratedWindowsAuthParameters.Username))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                throw new PlatformNotSupportedException("AcquireTokenByIntegratedWindowsAuth is only supported on .net core on windows" +
-                    "For more details see https://aka.ms/msal-net-iwa");
+                if (string.IsNullOrWhiteSpace(integratedWindowsAuthParameters.Username))
+                {
+                    throw new PlatformNotSupportedException("AcquireTokenByIntegratedWindowsAuth is only supported on .net core on windows" +
+                        "For more details see https://aka.ms/msal-net-iwa");
+                }
             }
-#endif 
 #endif
+
             var requestContext = CreateRequestContextAndLogVersionInfo(commonParameters.TelemetryCorrelationId);
 
             var requestParams = _publicClientApplication.CreateRequestParameters(
