@@ -336,6 +336,10 @@ namespace Microsoft.Identity.Test.Integration.SeleniumTests
                 }
                 catch (Exception ex)
                 {
+                    //TODO: There is a bug on .net core that prevents the TestContext.AddResultFile() method from being used. It will be availabe
+                    //in the next version of the MSTest.TestAdapter & MSTest.TestFramework nuget packages. Simply updating to 2.x when it is
+                    //released should resolve this. bug tracking here (https://github.com/Microsoft/testfx/issues/394)
+#if DESKTOP
                     var htmlDump = driver.PageSource;
                     string htmlDumpPath = Directory.GetCurrentDirectory() + "HTMLDUMP.txt";
                     File.Create(htmlDumpPath);
@@ -348,7 +352,7 @@ namespace Microsoft.Identity.Test.Integration.SeleniumTests
                     context.AddResultFile(htmlDumpPath);
 
                     driver.SaveScreenshot(context);
-
+#endif
                     throw ex;
                 }
             });
