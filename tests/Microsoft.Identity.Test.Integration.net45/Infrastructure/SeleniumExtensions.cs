@@ -45,12 +45,12 @@ namespace Microsoft.Identity.Test.Integration.Infrastructure
         }
 
         #region ScreenShot support
-        private static int _picNumber = 1;
+        private static int s_picNumber = 1;
 
         public static void SaveScreenshot(this IWebDriver driver, TestContext testContext, string name = "failure")
         {
             Screenshot ss = ((ITakesScreenshot)driver).GetScreenshot();
-            string picName = name + _picNumber++ + ".png";
+            string picName = name + s_picNumber++ + ".png";
 #if DESKTOP // Can't attach a file on netcore because mstest doesn't support it
             string failurePicturePath = Path.Combine(testContext.TestResultsDirectory, picName);
 #else

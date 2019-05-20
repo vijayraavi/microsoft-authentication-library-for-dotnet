@@ -21,7 +21,8 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
         public const string SecondPageId = "secondPage";
         public const string ClearCacheId = "clearCache";
         public const string SaveID = "saveButton";
-        public const string WebUPNInputId = "i0116";
+		//TESTING. WILL NOT MERGE
+        public const string WebUPNInputId = "i01160";
         public const string AdfsV4UsernameInputdId = "userNameInput";
         public const string AdfsV4WebPasswordId = "passwordInput";
         public const string AdfsV4WebSubmitId = "submitButton";

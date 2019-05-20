@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.Identity.Test.Unit;
 using System.Globalization;
 using Microsoft.Identity.Test.UIAutomation.Infrastructure;
-
+using System.IO;
 
 namespace Microsoft.Identity.Test.Integration.SeleniumTests
 {
@@ -154,7 +154,7 @@ namespace Microsoft.Identity.Test.Integration.SeleniumTests
             AcquireTokenInteractiveParameterBuilder builder = pca
                .AcquireTokenInteractive(s_scopes)
                .WithPrompt(prompt)
-               .WithCustomWebUi(CreateSeleniumCustomWebUI(labResponse.User, prompt, useLoginHint));
+               .WithCustomWebUi(CreateSeleniumCustomWebUI(labResponse.User, prompt, TestContext, useLoginHint));
 
             if (useLoginHint)
             {
@@ -294,7 +294,7 @@ namespace Microsoft.Identity.Test.Integration.SeleniumTests
             Trace.WriteLine("Part 1 - Acquire a token interactively, no login hint");
             AuthenticationResult result = await pca
                 .AcquireTokenInteractive(s_scopes)
-                .WithCustomWebUi(CreateSeleniumCustomWebUI(labResponse.User, Prompt.SelectAccount, false, directToAdfs))
+                .WithCustomWebUi(CreateSeleniumCustomWebUI(labResponse.User, Prompt.SelectAccount, TestContext, false, directToAdfs))
                 .ExecuteAsync(new CancellationTokenSource(_interactiveAuthTimeout).Token)
                 .ConfigureAwait(false);
 
@@ -307,7 +307,7 @@ namespace Microsoft.Identity.Test.Integration.SeleniumTests
             Trace.WriteLine("Part 3 - Acquire a token interactively again, with login hint");
             result = await pca
                 .AcquireTokenInteractive(s_scopes)
-                .WithCustomWebUi(CreateSeleniumCustomWebUI(labResponse.User, Prompt.ForceLogin, true, directToAdfs))
+                .WithCustomWebUi(CreateSeleniumCustomWebUI(labResponse.User, Prompt.ForceLogin, TestContext, true, directToAdfs))
                 .WithPrompt(Prompt.ForceLogin)
                 .WithLoginHint(labResponse.User.HomeUPN)
                 .ExecuteAsync(new CancellationTokenSource(_interactiveAuthTimeout).Token)
@@ -325,12 +325,32 @@ namespace Microsoft.Identity.Test.Integration.SeleniumTests
         	return result;
 		}
 
-        private static SeleniumWebUI CreateSeleniumCustomWebUI(LabUser user, Prompt prompt, bool withLoginHint, bool adfsOnly = false)
+        private static SeleniumWebUI CreateSeleniumCustomWebUI(LabUser user, Prompt prompt, TestContext context, bool withLoginHint, bool adfsOnly = false)
         {
             return new SeleniumWebUI((driver) =>
             {
                 Trace.WriteLine("Starting Selenium automation");
-                driver.PerformLogin(user, prompt, withLoginHint, adfsOnly);
+                try
+                {
+                    driver.PerformLogin(user, prompt, withLoginHint, adfsOnly);
+                }
+                catch (Exception ex)
+                {
+                    var htmlDump = driver.PageSource;
+                    string htmlDumpPath = Directory.GetCurrentDirectory() + "HTMLDUMP.txt";
+                    File.Create(htmlDumpPath);
+
+                    using (StreamWriter output = new StreamWriter(htmlDumpPath))
+                    {
+                        output.Write(htmlDump);
+                    }
+
+                    context.AddResultFile(htmlDumpPath);
+
+                    driver.SaveScreenshot(context);
+
+                    throw ex;
+                }
             });
         }
     }
