@@ -341,7 +341,7 @@ namespace Microsoft.Identity.Test.Integration.SeleniumTests
                     //released should resolve this. bug tracking here (https://github.com/Microsoft/testfx/issues/394)
 #if DESKTOP
                     var htmlDump = driver.PageSource;
-                    string htmlDumpPath = Directory.GetCurrentDirectory() + "HTMLDUMP.txt";
+                    string htmlDumpPath = Directory.GetCurrentDirectory() + context.TestName + "-HTMLDUMP.txt";
                     File.Create(htmlDumpPath);
 
                     using (StreamWriter output = new StreamWriter(htmlDumpPath))
