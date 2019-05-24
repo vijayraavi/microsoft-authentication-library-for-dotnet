@@ -38,11 +38,7 @@ namespace Microsoft.Identity.Test.Integration.Infrastructure
             Func<Uri, string> responseProducer,
             CancellationToken cancellationToken)
         {
-            cancellationToken.Register(
-                () => {
-                    _tcpListener.Stop();
-                    throw new OperationCanceledException();
-            });
+            cancellationToken.Register(() => _tcpListener.Stop());
 
             TcpClient tcpClient = null;
             try

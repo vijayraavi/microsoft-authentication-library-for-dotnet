@@ -1,6 +1,7 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
+﻿using Microsoft.Identity.Client;
+using Microsoft.Identity.Client.Extensibility;
+using Microsoft.Identity.Client.UI;
+using OpenQA.Selenium;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -9,16 +10,13 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.Identity.Client.Extensibility;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium;
 
 namespace Microsoft.Identity.Test.Integration.Infrastructure
 {
     internal class SeleniumWebUI : ICustomWebUi
     {
         private readonly Action<IWebDriver> _seleniumAutomationLogic;
-        private readonly TestContext _testContext;
+
         private const string CloseWindowSuccessHtml = @"<html>
   <head><title>Authentication Complete</title></head>
   <body>
@@ -35,15 +33,15 @@ namespace Microsoft.Identity.Test.Integration.Infrastructure
   </body>
 </html>";
 
-        public SeleniumWebUI(Action<IWebDriver> seleniumAutomationLogic, TestContext testContext)
+        public SeleniumWebUI(Action<IWebDriver> seleniumAutomationLogic)
         {
             _seleniumAutomationLogic = seleniumAutomationLogic;
-            _testContext = testContext;
         }
+
 
         public async Task<Uri> AcquireAuthorizationCodeAsync(
             Uri authorizationUri,
-            Uri redirectUri,
+            Uri redirectUri, 
             CancellationToken cancellationToken)
         {
             if (redirectUri.IsDefaultPort)
@@ -101,28 +99,27 @@ namespace Microsoft.Identity.Test.Integration.Infrastructure
 
         private async Task<Uri> SeleniumAcquireAuthAsync(
             Uri authorizationUri,
-            Uri redirectUri,
+            Uri redirectUri, 
             CancellationToken cancellationToken)
         {
             using (var driver = InitDriverAndGoToUrl(authorizationUri.OriginalString))
             using (var listener = new SingleMessageTcpListener(redirectUri.Port)) // starts listening
             {
+                Uri authCodeUri = null;
+                var listenForAuthCodeTask = listener.ListenToSingleRequestAndRespondAsync(
+                    (uri) =>
+                    {
+                        Trace.WriteLine("Intercepted an auth code url: " + uri.ToString());
+                        authCodeUri = uri;
+
+                        return GetMessageToShowInBroswerAfterAuth(uri);
+                    },
+                    cancellationToken);
 
                 try
                 {
-                    Uri authCodeUri = null;
-                    var listenForAuthCodeTask = listener.ListenToSingleRequestAndRespondAsync(
-                        (uri) =>
-                        {
-                            Trace.WriteLine("Intercepted an auth code url: " + uri.ToString());
-                            authCodeUri = uri;
 
-                            return GetMessageToShowInBroswerAfterAuth(uri);
-                        },
-                        cancellationToken);
-
-
-                    // Run the TCP listener and the selenium automation in parallel
+                    // Run the tcp listener and the selenium automation in parallel
                     var seleniumAutomationTask = Task.Run(() =>
                     {
                         _seleniumAutomationLogic(driver);
@@ -130,15 +127,13 @@ namespace Microsoft.Identity.Test.Integration.Infrastructure
 
                     await Task.WhenAll(seleniumAutomationTask, listenForAuthCodeTask).ConfigureAwait(false);
                     return authCodeUri;
+
                 }
-                catch (Exception ex)
+                catch (SocketException ex)
                 {
-                    Trace.WriteLine("Error occurred while acquiring auth. Possible cause: the browser never finished auth or the Selenium automation failed. A screenshot may be available");
-                    Trace.WriteLine($"Exception: {ex.GetType()} with message {ex.Message}");
-                    Trace.WriteLine("Page source:");
-                    Trace.WriteLine(driver?.PageSource);
-                    driver.SaveScreenshot(_testContext);
-                    throw;
+                    throw new MsalClientException(
+                        "selenium_ui_socket_error",
+                        "A socket exception occured " + ex.Message + " socket error code " + ex.SocketErrorCode);
                 }
             }
         }
