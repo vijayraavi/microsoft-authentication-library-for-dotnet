@@ -30,7 +30,10 @@ namespace Microsoft.Identity.Test.Unit
             Assert.AreEqual(expectedAppMetadataCount, accessor.GetAllAppMetadata().Count());
         }
 
-        public static void InitializeTokenCacheFromFile(this IPublicClientApplication pca, string resourceFile, bool updateATExpiry = false)
+        public static string InitializeTokenCacheFromFile(
+            this IPublicClientApplication pca,
+            string resourceFile,
+            bool updateATExpiry = false)
         {
             string tokenCacheAsString = File.ReadAllText(resourceFile);
 
@@ -48,12 +51,45 @@ namespace Microsoft.Identity.Test.Unit
                 }
 
                 tokenCacheAsString = cacheJson.ToString();
-            
-            }
 
+            }
 
             byte[] tokenCacheBlob = new UTF8Encoding().GetBytes(tokenCacheAsString);
             ((ITokenCacheSerializer)pca.UserTokenCache).DeserializeMsalV3(tokenCacheBlob);
+
+            return tokenCacheAsString;
+        }
+
+        public static void ConfigureFileTokenCache(this IPublicClientApplication pca, string path, string initialCache = null)
+        {
+            if (!String.IsNullOrEmpty(initialCache))
+                File.WriteAllText(path, initialCache);
+
+            pca.UserTokenCache.SetBeforeAccessAsync(async notificationArgs => 
+            {
+                using (StreamReader sr = new StreamReader(path))
+                {
+                    string stringData = await sr.ReadToEndAsync().ConfigureAwait(false);
+                    byte[] binaryData = Encoding.UTF8.GetBytes(stringData);
+                    notificationArgs.TokenCache.DeserializeMsalV3(binaryData);
+                }
+            });
+            
+            pca.UserTokenCache.SetAfterAccessAsync(async notificationArgs =>
+            {
+                if (notificationArgs.HasStateChanged)
+                {
+                    using (StreamWriter sw = new StreamWriter(path))
+                    {
+                        byte[] binaryData = notificationArgs.TokenCache.SerializeMsalV3();
+                        string stringData = Encoding.UTF8.GetString(binaryData);
+                        await sw.WriteAsync(stringData).ConfigureAwait(false);
+                    }
+                }
+            });
+
+            
+
         }
 
     }
