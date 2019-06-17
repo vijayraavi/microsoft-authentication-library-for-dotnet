@@ -562,8 +562,8 @@ namespace Microsoft.Identity.Client
 
             var aliases = await GetEnvAliasesTryAvoidNetworkCallAsync(
                 authority,
-                adalUsersResult.GetAdalUserEnviroments(),
                 existingEnvs,
+                adalUsersResult.GetAdalUserEnviroments(),
                 requestContext)
                 .ConfigureAwait(false);
 
