@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Identity.Client.Core;
 using Microsoft.Identity.Client.Utils;
 
@@ -16,6 +14,7 @@ namespace Microsoft.Identity.Client.Instance
         public const string DefaultTrustedHost = "login.microsoftonline.com";
         public const string AADCanonicalAuthorityTemplate = "https://{0}/{1}/";
 
+        // TODO: bogavril consolidate well known / trusted hosts
         private static readonly HashSet<string> s_trustedHostList = new HashSet<string>()
         {
             "login.partner.microsoftonline.cn", // Microsoft Azure China
@@ -36,19 +35,6 @@ namespace Microsoft.Identity.Client.Instance
             IServiceBundle serviceBundle,
             AuthorityInfo authorityInfo) : base(serviceBundle, authorityInfo)
         {
-        }
-
-        internal override async Task UpdateCanonicalAuthorityAsync(
-            RequestContext requestContext)
-        {
-            var metadata = await ServiceBundle.AadInstanceDiscovery
-                                 .GetMetadataEntryAsync(
-                                     new Uri(AuthorityInfo.CanonicalAuthority),
-                                     requestContext)
-                                 .ConfigureAwait(false);
-
-            AuthorityInfo.CanonicalAuthority =
-                CreateAuthorityUriWithHost(AuthorityInfo.CanonicalAuthority, metadata.PreferredNetwork);
         }
 
         internal override string GetTenantId()

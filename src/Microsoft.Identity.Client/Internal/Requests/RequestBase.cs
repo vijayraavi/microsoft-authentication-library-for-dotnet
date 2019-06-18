@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client.Cache.Items;
 using Microsoft.Identity.Client.TelemetryCore.Internal.Events;
+using Microsoft.Identity.Client.Instance.Discovery;
 
 namespace Microsoft.Identity.Client.Internal.Requests
 {
@@ -234,6 +235,8 @@ namespace Microsoft.Identity.Client.Internal.Requests
             }
         }
 
+        // TODO: bogavril - this looks wrong, Authority class has this logic and can do it for B2C and ADFS 
+        // not just AAD.
         private static string GetTenantUpdatedCanonicalAuthority(string authority, string replacementTenantId)
         {
             Uri authUri = new Uri(authority);
@@ -244,7 +247,8 @@ namespace Microsoft.Identity.Client.Internal.Requests
                 },
                 StringSplitOptions.RemoveEmptyEntries);
 
-            if (Authority.TenantlessTenantNames.Contains(pathSegments[0]) && !string.IsNullOrWhiteSpace(replacementTenantId))
+            if (Authority.TenantlessTenantNames.Contains(pathSegments[0]) && 
+                !string.IsNullOrWhiteSpace(replacementTenantId))
             {
                 return string.Format(CultureInfo.InvariantCulture, "https://{0}/{1}/", authUri.Authority, replacementTenantId);
             }
@@ -291,16 +295,14 @@ namespace Microsoft.Identity.Client.Internal.Requests
 
         internal async Task ResolveAuthorityEndpointsAsync()
         {
-            await AuthenticationRequestParameters
-                  .Authority
-                  .UpdateCanonicalAuthorityAsync(AuthenticationRequestParameters.RequestContext)
-                  .ConfigureAwait(false);
+            await UpdateAuthorityWithPrefferedNetworkHostAsync().ConfigureAwait(false);
 
             AuthenticationRequestParameters.Endpoints = await ServiceBundle.AuthorityEndpointResolutionManager.ResolveEndpointsAsync(
                 AuthenticationRequestParameters.AuthorityInfo,
                 AuthenticationRequestParameters.LoginHint,
                 AuthenticationRequestParameters.RequestContext).ConfigureAwait(false);
         }
+
 
         protected Task<MsalTokenResponse> SendTokenRequestAsync(
             IDictionary<string, string> additionalBodyParameters,
@@ -384,5 +386,20 @@ namespace Microsoft.Identity.Client.Internal.Requests
                         result.ExpiresOn));
             }
         }
+
+        private async Task UpdateAuthorityWithPrefferedNetworkHostAsync()
+        {
+            InstanceDiscoveryMetadataEntry metadata = await ServiceBundle.InstanceDiscoveryManager
+                                .GetMetadataEntryAsync(
+                                    new Uri(AuthenticationRequestParameters.AuthorityInfo.CanonicalAuthority),
+                                    AuthenticationRequestParameters.RequestContext)
+                                .ConfigureAwait(false);
+
+            AuthenticationRequestParameters.AuthorityInfo.CanonicalAuthority =
+                Authority.CreateAuthorityWithEnv(
+                    AuthenticationRequestParameters.AuthorityInfo.CanonicalAuthority,
+                    metadata.PreferredNetwork);
+        }
+
     }
 }

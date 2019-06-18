@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Identity.Client.Core;
 
 namespace Microsoft.Identity.Client.Instance
@@ -33,20 +32,20 @@ namespace Microsoft.Identity.Client.Instance
         {
             switch (authorityInfo.AuthorityType)
             {
-            case AuthorityType.Adfs:
-                return new AdfsAuthority(serviceBundle, authorityInfo);
+                case AuthorityType.Adfs:
+                    return new AdfsAuthority(serviceBundle, authorityInfo);
 
-            case AuthorityType.B2C:
-                CheckB2CAuthorityHost(serviceBundle, authorityInfo);
-                return new B2CAuthority(serviceBundle, authorityInfo);
+                case AuthorityType.B2C:
+                    CheckB2CAuthorityHost(serviceBundle, authorityInfo);
+                    return new B2CAuthority(serviceBundle, authorityInfo);
 
-            case AuthorityType.Aad:
-                return new AadAuthority(serviceBundle, authorityInfo);
+                case AuthorityType.Aad:
+                    return new AadAuthority(serviceBundle, authorityInfo);
 
-            default:
-                throw new MsalClientException(
-                    MsalError.InvalidAuthorityType,
-                    "Unsupported authority type");
+                default:
+                    throw new MsalClientException(
+                        MsalError.InvalidAuthorityType,
+                        "Unsupported authority type");
             }
         }
 
@@ -60,11 +59,6 @@ namespace Microsoft.Identity.Client.Instance
         public static Authority CreateAuthority(IServiceBundle serviceBundle)
         {
             return CreateAuthorityWithOverride(serviceBundle, serviceBundle.Config.AuthorityInfo);
-        }
-
-        internal virtual Task UpdateCanonicalAuthorityAsync(RequestContext requestContext)
-        {
-            return Task.FromResult(0);
         }
 
         internal static string GetFirstPathSegment(string authority)
@@ -99,20 +93,11 @@ namespace Microsoft.Identity.Client.Instance
 
         internal abstract void UpdateTenantId(string tenantId);
 
-        internal bool IsTenantless
-        {
-            get
-            {
-                string tenantId = GetTenantId();
-                return TenantlessTenantNames.Contains(tenantId);
-            }
-        }
-
-        internal static string CreateAuthorityUriWithHost(string authority, string host)
+        internal static string CreateAuthorityWithEnv(string authority, string environment)
         {
             var uriBuilder = new UriBuilder(authority)
             {
-                Host = host
+                Host = environment
             };
 
             return uriBuilder.Uri.AbsoluteUri;

@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Identity.Client.Instance.Discovery;
 
 namespace Microsoft.Identity.Client
 {
@@ -46,7 +47,7 @@ namespace Microsoft.Identity.Client
             {
                 preferredUsername = NullPreferredUsernameDisplayLabel;
             }
-            else if(string.IsNullOrWhiteSpace(idToken.PreferredUsername))
+            else if (string.IsNullOrWhiteSpace(idToken.PreferredUsername))
             {
                 if (isAdfsAuthority)
                 {
@@ -65,20 +66,19 @@ namespace Microsoft.Identity.Client
                 preferredUsername = idToken.PreferredUsername;
             }
 
-
-
-            var instanceDiscoveryMetadataEntry = GetCachedAuthorityMetaData(requestParams.TenantUpdatedCanonicalAuthority);
-
-            var environmentAliases = GetEnvironmentAliases(
-                requestParams.TenantUpdatedCanonicalAuthority,
-                instanceDiscoveryMetadataEntry);
-
-            var preferredEnvironmentHost = GetPreferredEnvironmentHost(
-                requestParams.AuthorityInfo.Host,
-                instanceDiscoveryMetadataEntry);
+            var instanceDiscoveryMetadata = await ServiceBundle.InstanceDiscoveryManager
+                                .GetMetadataEntryAsync(
+                                     new Uri(requestParams.TenantUpdatedCanonicalAuthority),
+                                    requestParams.RequestContext)
+                                .ConfigureAwait(false);
 
             var msalAccessTokenCacheItem =
-                new MsalAccessTokenCacheItem(preferredEnvironmentHost, requestParams.ClientId, response, tenantId, subject)
+                new MsalAccessTokenCacheItem(
+                    instanceDiscoveryMetadata.PreferredCache,
+                    requestParams.ClientId,
+                    response,
+                    tenantId,
+                    subject)
                 {
                     UserAssertionHash = requestParams.UserAssertion?.AssertionHash,
                     IsAdfs = isAdfsAuthority
@@ -89,7 +89,7 @@ namespace Microsoft.Identity.Client
             if (idToken != null)
             {
                 msalIdTokenCacheItem = new MsalIdTokenCacheItem(
-                    preferredEnvironmentHost,
+                    instanceDiscoveryMetadata.PreferredCache,
                     requestParams.ClientId,
                     response,
                     tenantId,
@@ -111,7 +111,7 @@ namespace Microsoft.Identity.Client
                         account = new Account(
                                           msalAccessTokenCacheItem.HomeAccountId,
                                           username,
-                                          preferredEnvironmentHost);
+                                          instanceDiscoveryMetadata.PreferredCache);
                     }
                     var args = new TokenCacheNotificationArgs(this, ClientId, account, true);
 
@@ -126,7 +126,7 @@ namespace Microsoft.Identity.Client
 
                         DeleteAccessTokensWithIntersectingScopes(
                             requestParams,
-                            environmentAliases,
+                            instanceDiscoveryMetadata.Aliases,
                             tenantId,
                             msalAccessTokenCacheItem.ScopeSet,
                             msalAccessTokenCacheItem.HomeAccountId);
@@ -137,12 +137,12 @@ namespace Microsoft.Identity.Client
                         {
                             _accessor.SaveIdToken(msalIdTokenCacheItem);
                             var msalAccountCacheItem = new MsalAccountCacheItem(
-                                preferredEnvironmentHost,
+                                instanceDiscoveryMetadata.PreferredCache,
                                 response,
                                 preferredUsername,
                                 tenantId);
 
-                            //The ADFS direct scenrio does not return client info so the home account id is acquired from the subject
+                            //The ADFS direct scenario does not return client info so the home account id is acquired from the subject
                             if (isAdfsAuthority && String.IsNullOrEmpty(msalAccountCacheItem.HomeAccountId))
                             {
                                 msalAccountCacheItem.HomeAccountId = idToken.Subject;
@@ -155,7 +155,7 @@ namespace Microsoft.Identity.Client
                         if (response.RefreshToken != null)
                         {
                             msalRefreshTokenCacheItem = new MsalRefreshTokenCacheItem(
-                                preferredEnvironmentHost,
+                                instanceDiscoveryMetadata.PreferredCache,
                                 requestParams.ClientId,
                                 response,
                                 subject);
@@ -169,7 +169,7 @@ namespace Microsoft.Identity.Client
                             _accessor.SaveRefreshToken(msalRefreshTokenCacheItem);
                         }
 
-                        UpdateAppMetadata(requestParams.ClientId, preferredEnvironmentHost, response.FamilyId);
+                        UpdateAppMetadata(requestParams.ClientId, instanceDiscoveryMetadata.PreferredCache, response.FamilyId);
 
                         // save RT in ADAL cache for public clients
                         // do not save RT in ADAL cache for MSAL B2C scenarios
@@ -180,9 +180,9 @@ namespace Microsoft.Identity.Client
                                 LegacyCachePersistence,
                                 msalRefreshTokenCacheItem,
                                 msalIdTokenCacheItem,
-                                Authority.CreateAuthorityUriWithHost(
+                                Authority.CreateAuthorityWithEnv(
                                     requestParams.TenantUpdatedCanonicalAuthority,
-                                    preferredEnvironmentHost),
+                                    instanceDiscoveryMetadata.PreferredCache),
                                 msalIdTokenCacheItem.IdToken.ObjectId, response.Scope);
                         }
 
@@ -214,22 +214,13 @@ namespace Microsoft.Identity.Client
 
             if (requestParams.AuthorityInfo != null)
             {
-                var instanceDiscoveryMetadataEntry = await GetCachedOrDiscoverAuthorityMetaDataAsync(
-                    requestParams.AuthorityInfo.CanonicalAuthority,
-                    requestParams.RequestContext).ConfigureAwait(false);
+                InstanceDiscoveryMetadataEntry instanceDiscoveryMetadataEntry =
+                    await ServiceBundle.InstanceDiscoveryManager.GetMetadataEntryAsync(
+                        new Uri(requestParams.AuthorityInfo.CanonicalAuthority),
+                        requestParams.RequestContext)
+                    .ConfigureAwait(false);
 
-                environmentAliases.UnionWith(GetEnvironmentAliases(
-                    requestParams.AuthorityInfo.CanonicalAuthority,
-                    instanceDiscoveryMetadataEntry));
-
-                if (requestParams.AuthorityInfo.AuthorityType == AuthorityType.Adfs)
-                {
-                    preferredEnvironmentAlias = requestParams.AuthorityInfo.CanonicalAuthority;
-                }
-                else if (requestParams.AuthorityInfo.AuthorityType != AuthorityType.B2C)
-                {
-                    preferredEnvironmentAlias = instanceDiscoveryMetadataEntry.PreferredCache;
-                }
+                environmentAliases.UnionWith(instanceDiscoveryMetadataEntry.Aliases);
             }
 
             // no authority passed
@@ -365,17 +356,11 @@ namespace Microsoft.Identity.Client
                     return null;
                 }
 
-                var instanceDiscoveryMetadataEntry = await GetCachedOrDiscoverAuthorityMetaDataAsync(
-                    requestParams.AuthorityInfo.CanonicalAuthority,
-                    requestParams.RequestContext).ConfigureAwait(false);
-
-                var environmentAliases = GetEnvironmentAliases(
-                    requestParams.AuthorityInfo.CanonicalAuthority,
-                    instanceDiscoveryMetadataEntry);
-
-                var preferredEnvironmentHost = GetPreferredEnvironmentHost(
-                    requestParams.AuthorityInfo.Host,
-                    instanceDiscoveryMetadataEntry);
+                InstanceDiscoveryMetadataEntry instanceDiscoveryMetadata =
+                    await ServiceBundle.InstanceDiscoveryManager.GetMetadataEntryAsync(
+                        new Uri(requestParams.AuthorityInfo.CanonicalAuthority),
+                        requestParams.RequestContext)
+                    .ConfigureAwait(false);
 
                 await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
                 try
@@ -384,15 +369,13 @@ namespace Microsoft.Identity.Client
 
                     TokenCacheNotificationArgs args = new TokenCacheNotificationArgs(this, ClientId, requestParams.Account, false);
 
-                    // make sure to check preferredEnvironmentHost first
-                    var allEnvAliases = new List<string>() { preferredEnvironmentHost };
-                    allEnvAliases.AddRange(environmentAliases);
-
-                    var keysAcrossEnvs = allEnvAliases.Select(ea => new MsalRefreshTokenCacheKey(
-                        ea,
-                        requestParams.ClientId,
-                        requestParams.Account?.HomeAccountId?.Identifier,
-                        familyId));
+                    IEnumerable<MsalRefreshTokenCacheKey> keysAcrossEnvs =
+                        instanceDiscoveryMetadata.AliasesWithPreferredCacheFirst.Select(
+                            ea => new MsalRefreshTokenCacheKey(
+                                ea,
+                                requestParams.ClientId,
+                                requestParams.Account?.HomeAccountId?.Identifier,
+                                familyId));
 
                     await OnBeforeAccessAsync(args).ConfigureAwait(false);
                     try
@@ -421,8 +404,8 @@ namespace Microsoft.Identity.Client
                             return CacheFallbackOperations.GetAdalEntryForMsal(
                                 Logger,
                                 LegacyCachePersistence,
-                                preferredEnvironmentHost,
-                                environmentAliases,
+                                instanceDiscoveryMetadata.PreferredCache,
+                                instanceDiscoveryMetadata.Aliases,
                                 requestParams.ClientId,
                                 upn,
                                 requestParams.Account.HomeAccountId?.Identifier);
@@ -452,13 +435,11 @@ namespace Microsoft.Identity.Client
                 return null;
             }
 
-            var instanceDiscoveryMetadataEntry = await GetCachedOrDiscoverAuthorityMetaDataAsync(
-                   requestParams.AuthorityInfo.CanonicalAuthority,
-                   requestParams.RequestContext).ConfigureAwait(false);
-
-            var environmentAliases = GetEnvironmentAliases(
-                requestParams.AuthorityInfo.CanonicalAuthority,
-                instanceDiscoveryMetadataEntry);
+            InstanceDiscoveryMetadataEntry instanceDiscoveryMetadata =
+                   await ServiceBundle.InstanceDiscoveryManager.GetMetadataEntryAsync(
+                       new Uri(requestParams.AuthorityInfo.CanonicalAuthority),
+                       requestParams.RequestContext)
+                   .ConfigureAwait(false);
 
             TokenCacheNotificationArgs args = new TokenCacheNotificationArgs(this, ClientId, requestParams?.Account, false);
 
@@ -470,7 +451,7 @@ namespace Microsoft.Identity.Client
                 await OnBeforeAccessAsync(args).ConfigureAwait(false);
 
                 appMetadata =
-                    environmentAliases
+                    instanceDiscoveryMetadata.Aliases
                     .Select(env => _accessor.GetAppMetadata(new MsalAppMetadataCacheKey(ClientId, env)))
                     .FirstOrDefault(item => item != null);
 

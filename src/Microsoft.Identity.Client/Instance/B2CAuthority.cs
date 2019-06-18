@@ -19,12 +19,6 @@ namespace Microsoft.Identity.Client.Instance
         {
         }
 
-        #pragma warning disable
-        internal override async Task UpdateCanonicalAuthorityAsync(
-            RequestContext requestContext)
-        {
-        }
-
         internal override string GetTenantId()
         {
             return new Uri(AuthorityInfo.CanonicalAuthority).Segments[2].TrimEnd('/');
