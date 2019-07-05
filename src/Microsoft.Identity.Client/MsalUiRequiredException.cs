@@ -47,12 +47,26 @@ namespace Microsoft.Identity.Client
         /// Classification of the conditional access error, enabling you to do more actions or inform the user depending on your scenario. 
         /// See https://aka.ms/msal-net-UiRequiredException for more details.
         /// </summary>
-        /// <remarks>The class <see cref="InvalidGrantClassification"/> lists most classification strings as constants. </remarks>
-        internal string Classification
+        internal UiRequiredExceptionClassification Classification
         {
             get
             {
-                return InvalidGrantClassification.GetUiExceptionClassification(SubError);
+                if (string.Equals(base.SubError, MsalError.BasicAction, StringComparison.OrdinalIgnoreCase))
+                    return UiRequiredExceptionClassification.BasicAction;
+
+                if (string.Equals(base.SubError, MsalError.AdditionalAction, StringComparison.OrdinalIgnoreCase))
+                    return UiRequiredExceptionClassification.AdditionalAction;
+
+                if (string.Equals(base.SubError, MsalError.MessageOnly, StringComparison.OrdinalIgnoreCase))
+                    return UiRequiredExceptionClassification.MessageOnly;
+
+                if (string.Equals(base.SubError, MsalError.ConsentRequired, StringComparison.OrdinalIgnoreCase))
+                    return UiRequiredExceptionClassification.ConsentRequired;
+
+                if (string.Equals(base.SubError, MsalError.UserPasswordExpired, StringComparison.OrdinalIgnoreCase))
+                    return UiRequiredExceptionClassification.UserPasswordExpired;
+
+                return UiRequiredExceptionClassification.None;
             }
         }
     }

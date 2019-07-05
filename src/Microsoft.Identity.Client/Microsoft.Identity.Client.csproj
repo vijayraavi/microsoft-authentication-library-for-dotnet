@@ -26,8 +26,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MsalServiceExceptionFactory.cs" />
+    <Compile Include="UiRequiredExceptionClassification.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="MsalServiceExceptionFactory.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="UiRequiredExceptionClassification.cs" />
   </ItemGroup>  
 </Project>

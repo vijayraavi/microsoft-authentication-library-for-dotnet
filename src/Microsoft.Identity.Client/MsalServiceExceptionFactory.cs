@@ -21,7 +21,7 @@ namespace Microsoft.Identity.Client
 
             if (string.Equals(oAuth2Response?.Error, MsalError.InvalidGrantError, StringComparison.OrdinalIgnoreCase))
             {
-                if (InvalidGrantClassification.IsUiInteractionRequired(oAuth2Response?.SubError))
+                if (IsUiInteractionRequired(oAuth2Response?.SubError))
                 {
                     ex = new MsalUiRequiredException(errorCode, errorMessage, innerException);
                 }
@@ -42,6 +42,17 @@ namespace Microsoft.Identity.Client
             ex.SubError = oAuth2Response?.SubError;
 
             return ex;
+        }
+
+        internal static bool IsUiInteractionRequired(string subError)
+        {
+            if (string.IsNullOrEmpty(subError))
+            {
+                return true;
+            }
+
+            return !string.Equals(subError, MsalUiRequiredException.ClientMismatch, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(subError, MsalUiRequiredException.ProtectionPolicyRequired, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
