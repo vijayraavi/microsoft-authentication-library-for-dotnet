@@ -68,24 +68,27 @@ namespace Microsoft.Identity.Test.Unit.ExceptionTests
         [TestMethod]
         public void MsalServiceException_Classification_Only()
         {
-            ValidateClassification(null, string.Empty);
-            ValidateClassification(string.Empty, string.Empty);
-            ValidateClassification("new_value", "new_value");
+            ValidateClassification(null, UiRequiredExceptionClassification.None);
+            ValidateClassification(string.Empty, UiRequiredExceptionClassification.None);
+            ValidateClassification("new_value", UiRequiredExceptionClassification.None);
 
-            ValidateClassification(InvalidGrantClassification.BasicAction,          InvalidGrantClassification.BasicAction);
-            ValidateClassification(InvalidGrantClassification.AdditionalAction,     InvalidGrantClassification.AdditionalAction);
-            ValidateClassification(InvalidGrantClassification.MessageOnly,          InvalidGrantClassification.MessageOnly);
-            ValidateClassification(InvalidGrantClassification.ConsentRequired,      InvalidGrantClassification.ConsentRequired);
-            ValidateClassification(InvalidGrantClassification.UserPasswordExpired,  InvalidGrantClassification.UserPasswordExpired);
+            ValidateClassification(MsalError.BasicAction,          UiRequiredExceptionClassification.BasicAction);
+            ValidateClassification(MsalError.AdditionalAction,     UiRequiredExceptionClassification.AdditionalAction);
+            ValidateClassification(MsalError.MessageOnly,          UiRequiredExceptionClassification.MessageOnly);
+            ValidateClassification(MsalError.ConsentRequired,      UiRequiredExceptionClassification.ConsentRequired);
+            ValidateClassification(MsalError.UserPasswordExpired,  UiRequiredExceptionClassification.UserPasswordExpired);
                                    
-            ValidateClassification(InvalidGrantClassification.BadToken, string.Empty);
-            ValidateClassification(InvalidGrantClassification.TokenExpired, string.Empty);
-            ValidateClassification(InvalidGrantClassification.ProtectionPolicyRequired, string.Empty, false);
-            ValidateClassification(InvalidGrantClassification.ClientMismatch, string.Empty, false);
-            ValidateClassification(InvalidGrantClassification.DeviceAuthenticationFailed, string.Empty);
+            ValidateClassification(MsalError.BadToken, UiRequiredExceptionClassification.None);
+            ValidateClassification(MsalError.TokenExpired, UiRequiredExceptionClassification.None);
+            ValidateClassification(MsalError.ProtectionPolicyRequired, UiRequiredExceptionClassification.None, false);
+            ValidateClassification(MsalError.ClientMismatch, UiRequiredExceptionClassification.None, false);
+            ValidateClassification(MsalError.DeviceAuthenticationFailed, UiRequiredExceptionClassification.None);
         }
 
-        private static void ValidateClassification(string suberror, string expectedClassification, bool expectUiRequiredException = true)
+        private static void ValidateClassification(
+            string suberror, 
+            UiRequiredExceptionClassification expectedClassification,
+            bool expectUiRequiredException = true)
         {
             var newJsonError = JsonError.Replace("some_suberror", suberror);
 
@@ -104,13 +107,11 @@ namespace Microsoft.Identity.Test.Unit.ExceptionTests
             Assert.AreEqual("some_claims", msalException.Claims);
             Assert.AreEqual("6347d33d-941a-4c35-9912-a9cf54fb1b3e", msalException.CorrelationId);
             Assert.AreEqual(suberror ?? "", msalException.SubError );
-
+            Assert.AreEqual(expectUiRequiredException, msalException is MsalUiRequiredException);
 
             if (expectUiRequiredException)
             {
-                Assert.IsTrue(msalException is MsalUiRequiredException);
                 Assert.AreEqual(expectedClassification, (msalException as MsalUiRequiredException).Classification);
-
             }
         }
 
@@ -205,7 +206,7 @@ namespace Microsoft.Identity.Test.Unit.ExceptionTests
             Assert.IsNull(msalUiRequiredException.ResponseBody);
             Assert.AreEqual(ExMessage, msalUiRequiredException.Message);
             Assert.AreEqual(0, msalUiRequiredException.StatusCode);
-            Assert.AreEqual(null, msalUiRequiredException.Classification);
+            Assert.AreEqual(UiRequiredExceptionClassification.None, msalUiRequiredException.Classification);
 
             // Act
             string piiMessage = MsalLogger.GetPiiScrubbedExceptionDetails(msalException);

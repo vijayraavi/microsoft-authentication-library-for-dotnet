@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Identity.Client.Http;
 using Microsoft.Identity.Client.OAuth2;
 using Microsoft.Identity.Client.Utils;
@@ -10,6 +11,10 @@ namespace Microsoft.Identity.Client
 {
     internal class MsalServiceExceptionFactory
     {
+        static ISet<string> s_nonUiSubErrors = new HashSet<string>(
+            new[] { MsalError.ClientMismatch, MsalError.ProtectionPolicyRequired },
+            StringComparer.OrdinalIgnoreCase);
+
         internal static MsalServiceException FromHttpResponse(
           string errorCode,
           string errorMessage,
@@ -51,8 +56,7 @@ namespace Microsoft.Identity.Client
                 return true;
             }
 
-            return !string.Equals(subError, MsalUiRequiredException.ClientMismatch, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(subError, MsalUiRequiredException.ProtectionPolicyRequired, StringComparison.OrdinalIgnoreCase);
+            return !s_nonUiSubErrors.Contains(subError);
         }
     }
 }
