@@ -228,10 +228,10 @@ namespace Test.Microsoft.Identity.UIAutomation
         {
             TestCommon.ResetInternalStaticCaches();
 
-            Assert.IsNotNull(_mobileTestHelper.B2CResetPasswordTestHelper(
+            _mobileTestHelper.B2CResetPasswordTestHelper(
                 _xamarinController,
                 LabUserHelper.GetB2CLocalAccountAsync().GetAwaiter().GetResult(),
-                CoreUiTestConstants.B2CPasswordReset));
+                CoreUiTestConstants.B2CPasswordReset);
         }
 
         /// <summary>
