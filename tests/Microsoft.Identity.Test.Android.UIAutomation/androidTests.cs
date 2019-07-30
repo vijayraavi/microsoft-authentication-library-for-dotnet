@@ -58,19 +58,19 @@ namespace Microsoft.Identity.Test.UIAutomation
         {
             var tests = new List<Action>()
             {
-                AcquireTokenTest,
-                AcquireTokenSilentTest,
+                //AcquireTokenTest,
+                //AcquireTokenSilentTest,
 
-                AcquireTokenADFSV3InteractiveFederatedTest,
-                AcquireTokenADFSV3InteractiveNonFederatedTest,
-                AcquireTokenADFSV4InteractiveFederatedTest,
-                AcquireTokenADFSV4InteractiveNonFederatedTest,
-                AcquireTokenADFSV2019InteractiveFederatedTest,
-                AcquireTokenADFSV2019InteractiveNonFederatedTest,
+                //AcquireTokenADFSV3InteractiveFederatedTest,
+                //AcquireTokenADFSV3InteractiveNonFederatedTest,
+                //AcquireTokenADFSV4InteractiveFederatedTest,
+                //AcquireTokenADFSV4InteractiveNonFederatedTest,
+                //AcquireTokenADFSV2019InteractiveFederatedTest,
+                //AcquireTokenADFSV2019InteractiveNonFederatedTest,
 
-                B2CLocalAccountAcquireTokenTest,
-                B2CFacebookMicrosoftLoginAcquireTokenTest,
-                B2CLocalEditPolicyAcquireTokenTest,
+                //B2CLocalAccountAcquireTokenTest,
+                //B2CFacebookMicrosoftLoginAcquireTokenTest,
+                //B2CLocalEditPolicyAcquireTokenTest,
                 B2CLocalPasswordResetTest,
                
                 //B2CGoogleB2CLoginAcquireTokenTest,
@@ -247,10 +247,10 @@ namespace Microsoft.Identity.Test.UIAutomation
         {
             TestCommon.ResetInternalStaticCaches();
 
-            Assert.IsNotNull(_mobileTestHelper.B2CResetPasswordTestHelper(
+           _mobileTestHelper.B2CResetPasswordTestHelper(
                 _xamarinController,
                 LabUserHelper.GetB2CLocalAccountAsync().GetAwaiter().GetResult(),
-                CoreUiTestConstants.B2CPasswordReset));
+                CoreUiTestConstants.B2CPasswordReset);
         }
 
         /// <summary>

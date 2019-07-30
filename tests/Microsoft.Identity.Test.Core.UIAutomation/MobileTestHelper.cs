@@ -57,7 +57,7 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
         /// <summary>
         /// Runs through the B2C acquire token flow with local account
         /// </summary>
-        public string B2CResetPasswordTestHelper(
+        public void B2CResetPasswordTestHelper(
             ITestController controller,
             LabResponse response,
             string testToRun)
@@ -73,9 +73,10 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
 
             controller.Tap(CoreUiTestConstants.B2CVerifyPasswordId, XamarinSelector.ByHtmlIdAttribute);
 
-            string result = "The controller hit the verify spot";
-            return result;
-        }
+            controller.Tap(CoreUiTestConstants.CancelId, XamarinSelector.ByHtmlIdAttribute);
+
+            VerifyPasswordResetCancellationResult(controller)
+;        }
 
         /// <summary>
         /// Runs through the B2C acquire token flow with Facebook Provider
@@ -303,6 +304,23 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
                 else if (result.Contains(CoreUiTestConstants.TestResultFailureMessage))
                 {
                     throw new ResultVerificationFailureException(VerificationError.ResultIndicatesFailure);
+                }
+                else
+                {
+                    throw new ResultVerificationFailureException(VerificationError.ResultNotFound);
+                }
+            });
+        }
+
+        public void VerifyPasswordResetCancellationResult(ITestController controller)
+        {
+            RetryVerificationHelper(() =>
+            {
+                //Test results are put into a label that is checked for messages
+                var result = controller.GetText(CoreUiTestConstants.TestResultId);
+                if(result.Contains(CoreUiTestConstants.PasswordResetCancelledMessage))
+                {
+                    return;
                 }
                 else
                 {

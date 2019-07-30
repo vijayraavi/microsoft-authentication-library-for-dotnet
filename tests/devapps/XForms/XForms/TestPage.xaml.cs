@@ -304,15 +304,6 @@ namespace XForms
 
                 result = await
                     request.ExecuteAsync().ConfigureAwait(true);
-
-                var resText = GetResultDescription(result);
-
-                if (result.AccessToken != null)
-                {
-                    acquireResponseTitleLabel.Text = SuccessfulResult;
-                }
-
-                acquireResponseLabel.Text = resText;
             }
             catch (MsalException exception)
             {
@@ -333,8 +324,9 @@ namespace XForms
                         CreateExceptionMessage(exception);
                     }
                 }
-                catch (Exception)
+                catch (Exception exe)
                 {
+                    CreateExceptionMessage(exe);
                 }
             }
             catch (Exception ex)

@@ -57,19 +57,19 @@ namespace Test.Microsoft.Identity.UIAutomation
         {
             var tests = new List<Action>()
             {
-                AcquireTokenInteractiveAndSilentTest,
+                //AcquireTokenInteractiveAndSilentTest,
 
-                AcquireTokenADFSV3InteractiveFederatedTest,
-                AcquireTokenADFSV3InteractiveNonFederatedTest,
-                AcquireTokenADFSV4InteractiveFederatedTest,
-                AcquireTokenADFSV4InteractiveNonFederatedTest,
-                AcquireTokenADFSV2019InteractiveFederatedTest,
-                AcquireTokenADFSV2019InteractiveNonFederatedTest,
+                //AcquireTokenADFSV3InteractiveFederatedTest,
+                //AcquireTokenADFSV3InteractiveNonFederatedTest,
+                //AcquireTokenADFSV4InteractiveFederatedTest,
+                //AcquireTokenADFSV4InteractiveNonFederatedTest,
+                //AcquireTokenADFSV2019InteractiveFederatedTest,
+                //AcquireTokenADFSV2019InteractiveNonFederatedTest,
 
                 //B2CLocalAccountAcquireTokenTest,
                 //B2CGoogleB2CLoginAuthorityAcquireTokenTest,
                 //B2CGoogleMicrosoftAuthorityAcquireTokenTest,
-                B2CFacebookMicrosoftLoginAcquireTokenTest,
+               // B2CFacebookMicrosoftLoginAcquireTokenTest,
                 //B2CFacebookB2CLoginAcquireTokenTest,
                 //B2CFacebookEditPolicyAcquireTokenTest,
                 B2CLocalPasswordResetTest

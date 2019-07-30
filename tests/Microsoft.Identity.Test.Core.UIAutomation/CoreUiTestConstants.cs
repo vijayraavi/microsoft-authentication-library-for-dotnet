@@ -51,6 +51,7 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
         public const string TestResultSuccessfulMessage = "Result: Success";
         public const string TestResultFailureMessage = "Result: Failure";
         public const string ClearAllCacheId = "ClearAllCache";
+        public const string PasswordResetCancelledMessage = "AADB2C90091: The user has cancelled entering self-asserted information.";
 
         public const string DefaultScope = "User.Read";
         public const string AcquirePageId = "AcquirePage";
@@ -71,6 +72,7 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
         public const string ConsentAcceptId = "idBtn_Accept";
         public const string PasswordInput = "password";
         public const string AlternativePasswordInput = "Passwd";
+        public const string CancelId = "cancel";
 
         // ADFSv2 fields
         public const string AdfsV2WebUsernameInputId = "ContentPlaceHolder1_UsernameTextBox";
