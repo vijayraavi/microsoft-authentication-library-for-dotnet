@@ -67,6 +67,8 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
 
             controller.Tap(CoreUiTestConstants.B2CForgotPasswordId, XamarinSelector.ByHtmlIdAttribute);
 
+            controller.Tap(CoreUiTestConstants.B2CForgotPasswordEmailId, XamarinSelector.ByHtmlIdAttribute);
+
             controller.EnterText(CoreUiTestConstants.B2CForgotPasswordEmailId, 20, response.User.Upn, XamarinSelector.ByHtmlIdAttribute);
 
             controller.Tap(CoreUiTestConstants.B2CForgotPasswordVerifyButtonId, XamarinSelector.ByHtmlIdAttribute);
