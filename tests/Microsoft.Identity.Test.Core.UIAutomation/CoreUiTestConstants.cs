@@ -51,7 +51,7 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
         public const string TestResultSuccessfulMessage = "Result: Success";
         public const string TestResultFailureMessage = "Result: Failure";
         public const string ClearAllCacheId = "ClearAllCache";
-        public const string PasswordResetCancelledMessage = "AADB2C90091: The user has cancelled entering self-asserted information.";
+        public const string PasswordResetCancelledMessage = "AADB2C90118: The user has forgotten their password. ";
 
         public const string DefaultScope = "User.Read";
         public const string AcquirePageId = "AcquirePage";
