@@ -21,7 +21,7 @@ namespace Test.Microsoft.Identity.UIAutomation
     /// Configures environment for iOS tests to run
     /// </summary>
     [TestFixture(Platform.iOS)]
-    public class IOSMsalTests
+    public class IOSTests
     {
         private IApp _app;
         private readonly Platform _platform;
@@ -32,7 +32,7 @@ namespace Test.Microsoft.Identity.UIAutomation
         /// Initializes Xamarin UI tests
         /// </summary>
         /// <param name="platform">The platform where the tests will be performed</param>
-        public IOSMsalTests(Platform platform)
+        public IOSTests(Platform platform)
         {
             _platform = platform;
         }
@@ -71,7 +71,8 @@ namespace Test.Microsoft.Identity.UIAutomation
                 //B2CGoogleMicrosoftAuthorityAcquireTokenTest,
                 B2CFacebookMicrosoftLoginAcquireTokenTest,
                 //B2CFacebookB2CLoginAcquireTokenTest,
-                //B2CFacebookEditPolicyAcquireTokenTest
+                //B2CFacebookEditPolicyAcquireTokenTest,
+                B2CLocalPasswordResetTest
             };
 
             var hasFailed = false;
@@ -213,6 +214,24 @@ namespace Test.Microsoft.Identity.UIAutomation
                 _xamarinController,
                 LabUserHelper.GetB2CLocalAccountAsync().GetAwaiter().GetResult(),
                 CoreUiTestConstants.B2CLocalb2clogin);
+        }
+
+        /// <summary>
+        /// B2C acquire token with local account
+        /// b2clogin.com authority
+        /// with password reset.
+        /// The test will validate that the correct password reset
+        /// ui is shown.
+        /// </summary>
+        [Test]
+        public void B2CLocalPasswordResetTest()
+        {
+            TestCommon.ResetInternalStaticCaches();
+
+            Assert.IsNotNull(_mobileTestHelper.B2CResetPasswordTestHelper(
+                _xamarinController,
+                LabUserHelper.GetB2CLocalAccountAsync().GetAwaiter().GetResult(),
+                CoreUiTestConstants.B2CPasswordReset));
         }
 
         /// <summary>

@@ -55,6 +55,29 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
         }
 
         /// <summary>
+        /// Runs through the B2C acquire token flow with local account
+        /// </summary>
+        public string B2CResetPasswordTestHelper(
+            ITestController controller,
+            LabResponse response,
+            string testToRun)
+        {
+            controller.Tap(CoreUiTestConstants.TestsToRunPicker);
+            controller.Tap(testToRun);
+
+            controller.Tap(CoreUiTestConstants.B2CForgotPasswordId, XamarinSelector.ByHtmlIdAttribute);
+
+            controller.EnterText(CoreUiTestConstants.B2CForgotPasswordEmailId, 20, response.User.Upn, XamarinSelector.ByHtmlIdAttribute);
+
+            controller.Tap(CoreUiTestConstants.B2CForgotPasswordVerifyButtonId, XamarinSelector.ByHtmlIdAttribute);
+
+            controller.Tap(CoreUiTestConstants.B2CVerifyPasswordId, XamarinSelector.ByHtmlIdAttribute);
+
+            string result = "The controller hit the verify spot";
+            return result;
+        }
+
+        /// <summary>
         /// Runs through the B2C acquire token flow with Facebook Provider
         /// </summary>
         public void B2CFacebookAcquireTokenInteractiveTestHelper(

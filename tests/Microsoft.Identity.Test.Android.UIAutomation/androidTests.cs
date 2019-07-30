@@ -71,6 +71,7 @@ namespace Microsoft.Identity.Test.UIAutomation
                 B2CLocalAccountAcquireTokenTest,
                 B2CFacebookMicrosoftLoginAcquireTokenTest,
                 B2CLocalEditPolicyAcquireTokenTest,
+                B2CLocalPasswordResetTest,
                
                 //B2CGoogleB2CLoginAcquireTokenTest,
                 //B2CGoogleMicrosoftLoginAcquireTokenTest,                
@@ -100,7 +101,6 @@ namespace Microsoft.Identity.Test.UIAutomation
 
             Assert.IsFalse(hasFailed, $"Test Failed. {stringBuilderMessage}");
         }
-
 
         /// <summary>
         /// Runs through the standard acquire token flow, using the default app configured UiBehavior = Login
@@ -233,6 +233,24 @@ namespace Microsoft.Identity.Test.UIAutomation
                 _xamarinController,
                 LabUserHelper.GetB2CLocalAccountAsync().GetAwaiter().GetResult(),
                 CoreUiTestConstants.B2CLocalb2clogin);
+        }
+
+        /// <summary>
+        /// B2C acquire token with local account
+        /// b2clogin.com authority
+        /// with password reset.
+        /// The test will validate that the correct password reset
+        /// ui is shown.
+        /// </summary>
+        [Test]
+        public void B2CLocalPasswordResetTest()
+        {
+            TestCommon.ResetInternalStaticCaches();
+
+            Assert.IsNotNull(_mobileTestHelper.B2CResetPasswordTestHelper(
+                _xamarinController,
+                LabUserHelper.GetB2CLocalAccountAsync().GetAwaiter().GetResult(),
+                CoreUiTestConstants.B2CPasswordReset));
         }
 
         /// <summary>

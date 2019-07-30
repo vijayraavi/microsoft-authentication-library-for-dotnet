@@ -22,6 +22,7 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
         public const string B2CROPC = "B2C ROPC";
         public const string B2CFacebookb2clogin = "B2C FB b2clogin.com";
         public const string B2CLocalEditProfile = "B2C Local edit profile";
+        public const string B2CPasswordReset = "B2C Password Reset";
         public const string B2CFacebookMicrosoftLogin = "B2C FB microsoftonline.com";
         public const string B2CLocalb2clogin = "B2C Local b2clogin.com";
         public const string B2CLocalMicrosoftLogin = "B2C Local microsoftonline.com";
@@ -99,6 +100,10 @@ namespace Microsoft.Identity.Test.UIAutomation.Infrastructure
         public const string B2CGoogleNextId = "next";
         public const string B2CGoogleSignInId = "signIn";
         public const string B2CEditProfileContinueId = "continue";
+        public const string B2CForgotPasswordId = "forgotPassword";
+        public const string B2CVerifyPasswordId = "email_ver_input";
+        public const string B2CForgotPasswordEmailId = "email";
+        public const string B2CForgotPasswordVerifyButtonId = "email_ver_but_send";
 
         // these should match the product enum values
         public const string UiBehaviorConsent = "consent";

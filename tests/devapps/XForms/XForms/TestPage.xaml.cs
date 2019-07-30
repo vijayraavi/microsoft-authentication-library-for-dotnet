@@ -136,6 +136,12 @@ namespace XForms
                     PrepareTestEnvironmentAsync().ConfigureAwait(false);
                     AcquireTokenInteractiveAsync(Prompt.ForceLogin).ConfigureAwait(false);
                     break;
+                case 15: // B2C Local b2clogin.com w/password reset
+                    _isB2CTest = true;
+                    App.s_authority = App.B2CLoginAuthority;
+                    PrepareTestEnvironmentAsync().ConfigureAwait(false);
+                    PasswordResetTestAsync().ConfigureAwait(false);
+                    break;
             }
         }
 
@@ -283,6 +289,57 @@ namespace XForms
             catch (Exception exception)
             {
                 CreateExceptionMessage(exception);
+            }
+        }
+
+        private async Task PasswordResetTestAsync()
+        {
+            AuthenticationResult result = null;
+            try
+            {
+                AcquireTokenInteractiveParameterBuilder request = PublicClientApplication.AcquireTokenInteractive(App.s_scopes)
+                    .WithPrompt(Prompt.ForceLogin)
+                    .WithParentActivityOrWindow(App.RootViewController)
+                    .WithUseEmbeddedWebView(true);
+
+                result = await
+                    request.ExecuteAsync().ConfigureAwait(true);
+
+                var resText = GetResultDescription(result);
+
+                if (result.AccessToken != null)
+                {
+                    acquireResponseTitleLabel.Text = SuccessfulResult;
+                }
+
+                acquireResponseLabel.Text = resText;
+            }
+            catch (MsalException exception)
+            {
+                try
+                {
+                    if (exception.Message.Contains("AADB2C90118"))
+                    {
+                        AcquireTokenInteractiveParameterBuilder request = PublicClientApplication.AcquireTokenInteractive(App.s_scopes)
+                            .WithParentActivityOrWindow(App.RootViewController)
+                            .WithPrompt(Prompt.ForceLogin)
+                            .WithB2CAuthority(App.B2CPasswordResetAuthority);
+
+                        result = await
+                            request.ExecuteAsync().ConfigureAwait(true);
+                    }
+                    else
+                    {
+                        CreateExceptionMessage(exception);
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            }
+            catch (Exception ex)
+            {
+                CreateExceptionMessage(ex);
             }
         }
 
