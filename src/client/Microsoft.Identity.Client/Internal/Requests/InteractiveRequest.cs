@@ -235,6 +235,12 @@ namespace Microsoft.Identity.Client.Internal.Requests
                 authorizationRequestParameters[OAuth2Parameter.Prompt] = _interactiveParameters.Prompt.PromptValue;
             }
 
+            string telemetry = ServiceBundle.TelemetryManager.FetchAndResetHttpTelemetryContent();
+            if (!string.IsNullOrEmpty(telemetry))
+            {
+                authorizationRequestParameters["x-client-last-request"] = telemetry;
+            }
+
             return authorizationRequestParameters;
         }
 
@@ -271,7 +277,7 @@ namespace Microsoft.Identity.Client.Internal.Requests
             if (_authorizationResult.Status != AuthorizationStatus.Success)
             {
                 ServiceBundle.DefaultLogger.InfoPii(
-                    LogMessages.AuthorizationResultWasNotSuccessful + _authorizationResult.ErrorDescription ?? "Unknown error.", 
+                    LogMessages.AuthorizationResultWasNotSuccessful + _authorizationResult.ErrorDescription ?? "Unknown error.",
                     LogMessages.AuthorizationResultWasNotSuccessful);
                 throw new MsalServiceException(_authorizationResult.Error, _authorizationResult.ErrorDescription ?? "Unknown error.");
             }

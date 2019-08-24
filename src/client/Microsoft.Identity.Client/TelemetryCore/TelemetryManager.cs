@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Identity.Client.TelemetryCore.Internal.Events;
 using Microsoft.Identity.Client.PlatformsCommon.Interfaces;
+using Microsoft.Identity.Client.Utils;
+using Microsoft.Identity.Client.TelemetryCore.Internal;
+using Microsoft.Identity.Client.TelemetryCore.Internal.Constants;
 
 namespace Microsoft.Identity.Client.TelemetryCore
 {
@@ -27,6 +30,7 @@ namespace Microsoft.Identity.Client.TelemetryCore
         private readonly bool _onlySendFailureTelemetry;
         private readonly IPlatformProxy _platformProxy;
         private readonly IApplicationConfiguration _applicationConfiguration;
+        internal readonly HttpTelemetryContent _currentTelemetryPayload;
 
         public TelemetryManager(
             IApplicationConfiguration applicationConfiguration,
@@ -38,6 +42,7 @@ namespace Microsoft.Identity.Client.TelemetryCore
             _platformProxy = platformProxy;
             Callback = telemetryCallback;
             _onlySendFailureTelemetry = onlySendFailureTelemetry;
+            _currentTelemetryPayload = new HttpTelemetryContent();
         }
 
         public TelemetryCallback Callback { get; }
@@ -64,6 +69,8 @@ namespace Microsoft.Identity.Client.TelemetryCore
 
         public void StopEvent(EventBase eventToStop)
         {
+            ProcessEventsForHttpTelemetryContent(eventToStop);
+
             if (!HasReceiver())
             {
                 return;
@@ -83,7 +90,7 @@ namespace Microsoft.Identity.Client.TelemetryCore
                 return;
             }
 
-            // Set execution time properties on the event adn increment the event count.
+            // Set execution time properties on the event and increment the event count.
             eventToStop.Stop();
             IncrementEventCount(eventToStop);
 
@@ -137,6 +144,42 @@ namespace Microsoft.Identity.Client.TelemetryCore
             Callback?.Invoke(eventsToFlush.Cast<Dictionary<string, string>>().ToList());
         }
 
+        public string FetchAndResetHttpTelemetryContent()
+        {
+       if (!string.IsNullOrEmpty(_currentTelemetryPayload.ApiId))
+            {
+                string jsonPayload = JsonHelper.SerializeToJson(_currentTelemetryPayload);
+                _currentTelemetryPayload.ResetLastErrorCode();
+                return jsonPayload;
+            }
+            else
+            {
+                return string.Empty;
+            }           
+        }
+
+        private void ProcessEventsForHttpTelemetryContent(EventBase eventToStop)
+        {
+            foreach (var ev in eventToStop)
+            {
+                if (string.Equals(ev.Key, MsalTelemetryBlobEventNames.ApiIdConstStrKey))
+                {
+                    _currentTelemetryPayload.ApiId = ev.Value;
+                }
+
+                if (string.Equals(ev.Key, MsalTelemetryBlobEventNames.ApiErrorCodeConstStrKey))
+                {
+                    _currentTelemetryPayload.LastErrorCode = ev.Value;
+                    _currentTelemetryPayload.UnreportedErrorCount++;
+                }
+
+                if (string.Equals(ev.Key, MsalTelemetryBlobEventNames.MsalCorrelationIdConstStrKey))
+                {
+                    _currentTelemetryPayload.CorrelationId = ev.Value;
+                }
+            }
+        }
+
         private IEnumerable<EventBase> CollateOrphanedEvents(string correlationId)
         {
             var orphanedEvents = new List<EventBase>();
@@ -159,7 +202,7 @@ namespace Microsoft.Identity.Client.TelemetryCore
         private void IncrementEventCount(EventBase eventToIncrement)
         {
             string eventName;
-            if (eventToIncrement[EventBase.EventNameKey].Substring(0,10) == MsalCacheEventValuePrefix)
+            if (eventToIncrement[EventBase.EventNameKey].Substring(0, 10) == MsalCacheEventValuePrefix)
             {
                 eventName = MsalCacheEventName;
             }
@@ -216,7 +259,7 @@ namespace Microsoft.Identity.Client.TelemetryCore
                 unchecked
                 {
                     // Choose large primes to avoid hashing collisions
-                    const int HashingBase = (int) 2166136261;
+                    const int HashingBase = (int)2166136261;
                     const int HashingMultiplier = 16777619;
 
                     int hash = HashingBase;

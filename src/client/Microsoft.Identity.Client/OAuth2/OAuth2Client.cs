@@ -77,6 +77,12 @@ namespace Microsoft.Identity.Client.OAuth2
                 _headers.Add(OAuth2Header.AppVer, requestContext.Logger.ClientVersion);
             }
 
+            string telemetry = _telemetryManager.FetchAndResetHttpTelemetryContent();
+            if (!string.IsNullOrEmpty(telemetry))
+            {
+                _headers.Add("x-client-last-request", telemetry);
+            }
+
             HttpResponse response = null;
             Uri endpointUri = CreateFullEndpointUri(endPoint);
             var httpEvent = new HttpEvent(requestContext.CorrelationId.AsMatsCorrelationId())
