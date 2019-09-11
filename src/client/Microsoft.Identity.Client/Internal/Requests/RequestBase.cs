@@ -213,7 +213,6 @@ namespace Microsoft.Identity.Client.Internal.Requests
             AuthenticationRequestParameters.TenantUpdatedCanonicalAuthority =
                    Authority.CreateAuthorityWithTenant(AuthenticationRequestParameters.Authority.AuthorityInfo, idToken?.TenantId);
 
-
             AuthenticationRequestParameters.RequestContext.Logger.Info("Saving Token Response to cache..");
 
             var tuple = await CacheManager.SaveTokenResponseAsync(msalTokenResponse).ConfigureAwait(false);

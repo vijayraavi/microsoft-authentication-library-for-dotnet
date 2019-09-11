@@ -136,7 +136,12 @@ namespace Microsoft.Identity.Client.Instance
             }
         }
 
-        internal abstract string GetTenantId();
+        /// <summary>
+        /// Gets the tenantId. Not all authorities support tenants (ADFS and B2C do not),  
+        /// in which case the tenantId is null
+        /// </summary>
+        /// <returns></returns>
+        internal abstract string GetTenantId();        
 
         /// <summary>
         /// Gets a tenanted authority if the current authority is tenantless. 

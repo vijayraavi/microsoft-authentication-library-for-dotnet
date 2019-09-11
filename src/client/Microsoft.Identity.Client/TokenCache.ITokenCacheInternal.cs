@@ -290,8 +290,6 @@ namespace Microsoft.Identity.Client
 
             if (msalAccessTokenCacheItem != null)
             {
-
-
                 if (msalAccessTokenCacheItem.ExpiresOn >
                     DateTime.UtcNow + TimeSpan.FromMinutes(DefaultExpirationBufferInMinutes))
                 {
@@ -334,9 +332,9 @@ namespace Microsoft.Identity.Client
                 return item;
             }
 
-            if (string.Equals(item.KeyId, requestKid))
+            if (string.Equals(item.KeyId, requestKid, StringComparison.OrdinalIgnoreCase))
             {
-                authenticationRequest.RequestContext.Logger.Verbose("PoP token found");
+                authenticationRequest.RequestContext.Logger.Verbose("Keyed token found");
                 return item;
             }
 
