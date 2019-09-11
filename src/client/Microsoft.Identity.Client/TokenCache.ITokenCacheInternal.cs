@@ -81,7 +81,8 @@ namespace Microsoft.Identity.Client
                     requestParams.ClientId,
                     response,
                     tenantId,
-                    subject)
+                    subject,
+                    requestParams.AuthenticationScheme.KeyId)
                 {
                     UserAssertionHash = requestParams.UserAssertion?.AssertionHash,
                     IsAdfs = isAdfsAuthority
@@ -285,8 +286,12 @@ namespace Microsoft.Identity.Client
                     MsalErrorMessage.MultipleTokensMatched);
             }
 
+            msalAccessTokenCacheItem = FilterByKeyId(msalAccessTokenCacheItem, requestParams);
+
             if (msalAccessTokenCacheItem != null)
             {
+
+
                 if (msalAccessTokenCacheItem.ExpiresOn >
                     DateTime.UtcNow + TimeSpan.FromMinutes(DefaultExpirationBufferInMinutes))
                 {
@@ -312,6 +317,31 @@ namespace Microsoft.Identity.Client
                     GetAccessTokenExpireLogMessageContent(msalAccessTokenCacheItem));
             }
 
+            return null;
+        }
+
+        private MsalAccessTokenCacheItem FilterByKeyId(MsalAccessTokenCacheItem item, AuthenticationRequestParameters authenticationRequest)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            string requestKid = authenticationRequest.AuthenticationScheme.KeyId;
+            if (string.IsNullOrEmpty(item.KeyId) && string.IsNullOrEmpty(requestKid))
+            {
+                authenticationRequest.RequestContext.Logger.Verbose("Bearer token found");
+                return item;
+            }
+
+            if (string.Equals(item.KeyId, requestKid))
+            {
+                authenticationRequest.RequestContext.Logger.Verbose("PoP token found");
+                return item;
+            }
+
+            authenticationRequest.RequestContext.Logger.Info(
+                 $"A token bound to the wrong key was found. Token kid: {item.KeyId} Request kid: {requestKid}");
             return null;
         }
 
