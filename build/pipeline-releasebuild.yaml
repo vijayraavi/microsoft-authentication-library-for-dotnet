@@ -45,7 +45,7 @@ steps:
 #     BuildConfiguration: '$(BuildConfiguration)'
 
 # Run Post-build code analysis (e.g. Roslyn)
-- template: template-postbuild-code-analysis.yaml
+#- template: template-postbuild-code-analysis.yaml
 
 # Pack and sign all of the nuget packages
 - template: template-pack-and-sign-all-nugets.yaml
