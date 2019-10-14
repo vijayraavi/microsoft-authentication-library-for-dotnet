@@ -14,12 +14,14 @@ namespace Microsoft.Identity.Client
             ITokenCacheSerializer tokenCacheSerializer,
             string clientId,
             IAccount account,
-            bool hasStateChanged)
+            bool hasStateChanged, 
+            bool isAppCache)
         {
             TokenCache = tokenCacheSerializer;
             ClientId = clientId;
             Account = account;
             HasStateChanged = hasStateChanged;
+            IsApplicationTokenCache = isAppCache;
         }
 
         /// <summary>
@@ -43,5 +45,12 @@ namespace Microsoft.Identity.Client
         /// Not all cache operations modify the state of the cache.
         /// </summary>
         public bool HasStateChanged { get; internal set; }
+
+        /// <summary>
+        /// Indicates wheather the cache change occured in the <see cref="ClientApplicationBase.UserTokenCache" />
+        /// or in the <see cref="ConfidentialClientApplication.AppTokenCache"/>. The latter is used in Client Credential grant, 
+        /// i.e. <see cref="ConfidentialClientApplication.AcquireTokenForClient(System.Collections.Generic.IEnumerable{string})"/>
+        /// </summary>
+        public bool IsApplicationTokenCache { get; }
     }
 }
