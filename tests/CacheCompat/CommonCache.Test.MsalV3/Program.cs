@@ -53,7 +53,7 @@ namespace CommonCache.Test.MsalV2
 
                 foreach (var labUserData in testInputData.LabUserDatas)
                 {
-                    IAccount accountToReference = accounts.FirstOrDefault(x => x.Username.Equals(labUserData.Upn, StringComparison.OrdinalIgnoreCase));
+                    IAccount accountToReference = accounts.FirstOrDefault(x => x.Username.Equals(labUserData.User.Upn, StringComparison.OrdinalIgnoreCase));
 
                     try
                     {
@@ -66,23 +66,26 @@ namespace CommonCache.Test.MsalV2
 
                         Console.WriteLine($"got token for '{result.Account.Username}' from the cache");
 
-                        results.Add(new CacheExecutorAccountResult(labUserData.Upn, result.Account.Username, true));
+                        results.Add(new CacheExecutorAccountResult(labUserData.User.Upn, result.Account.Username, true));
                     }
                     catch (MsalUiRequiredException)
                     {
                         var result = await app
-                            .AcquireTokenByUsernamePassword(scopes, labUserData.Upn, labUserData.Password.ToSecureString())
+                            .AcquireTokenByUsernamePassword(
+                                scopes, 
+                                labUserData.User.Upn, 
+                                labUserData.User.GetOrFetchPassword().ToSecureString())
                             .ExecuteAsync(CancellationToken.None)
                             .ConfigureAwait(false);
 
                         if (string.IsNullOrWhiteSpace(result.AccessToken))
                         {
-                            results.Add(new CacheExecutorAccountResult(labUserData.Upn, string.Empty, false));
+                            results.Add(new CacheExecutorAccountResult(labUserData.User.Upn, string.Empty, false));
                         }
                         else
                         {
                             Console.WriteLine($"got token for '{result.Account.Username}' without the cache");
-                            results.Add(new CacheExecutorAccountResult(labUserData.Upn, result.Account.Username, false));
+                            results.Add(new CacheExecutorAccountResult(labUserData.User.Upn, result.Account.Username, false));
                         }
                     }
                 }

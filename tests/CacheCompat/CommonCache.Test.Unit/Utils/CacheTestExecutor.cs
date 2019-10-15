@@ -9,17 +9,18 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonCache.Test.Common;
+using Microsoft.Identity.Test.LabInfrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonCache.Test.Unit.Utils
 {
     public class CacheTestExecutor
     {
-        private readonly IEnumerable<LabUserData> _labUsers;
+        private readonly IEnumerable<LabResponse> _labUsers;
         private readonly CacheStorageType _cacheStorageType;
 
         public CacheTestExecutor(
-            IEnumerable<LabUserData> labUsers,
+            IEnumerable<LabResponse> labUsers,
             CacheStorageType cacheStorageType)
         {
             _labUsers = labUsers;

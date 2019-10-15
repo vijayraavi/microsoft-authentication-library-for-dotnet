@@ -86,7 +86,6 @@ namespace Microsoft.Identity.Test.Integration.HeadlessTests
             X509Certificate2 cert = GetCertificate();
             var confidentialClientAuthority = "https://login.windows.net/72f988bf-86f1-41af-91ab-2d7cd011db47";
 
-
             confidentialApp = ConfidentialClientApplicationBuilder
                 .Create(ConfidentialClientID)
                 .WithAuthority(new Uri(confidentialClientAuthority), true)

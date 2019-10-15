@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonCache.Test.Common;
 using Microsoft.Identity.Json;
+using Microsoft.Identity.Test.LabInfrastructure;
 
 namespace CommonCache.Test.Unit.Utils
 {
@@ -27,13 +28,13 @@ namespace CommonCache.Test.Unit.Utils
         public string ResultsFilePath { get; }
         public CacheStorageType CacheStorageType { get; }
 
-        public async Task<CacheProgramResults> ExecuteAsync(IEnumerable<LabUserData> labUserData, CancellationToken cancellationToken)
+        public async Task<CacheProgramResults> ExecuteAsync(IEnumerable<LabResponse> labUserData, CancellationToken cancellationToken)
         {
             var testInputData = new TestInputData
             {
                 ResultsFilePath = ResultsFilePath,
                 StorageType = CacheStorageType,
-                LabUserDatas = labUserData.ToList()
+                LabUserDatas = labUserData
             };
 
             var inputDataJson = JsonConvert.SerializeObject(testInputData);

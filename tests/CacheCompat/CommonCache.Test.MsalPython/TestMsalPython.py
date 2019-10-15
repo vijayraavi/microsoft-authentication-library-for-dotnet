@@ -64,7 +64,7 @@ results = []
 
 for labUserData in testInput['LabUserDatas']:
     upn = labUserData['Upn']
-    print('Handling labUserData.Upn = ' + upn)
+    print('Handling labUserData.User.Upn = ' + upn)
     accounts = app.get_accounts(username=upn)
 
     result = None

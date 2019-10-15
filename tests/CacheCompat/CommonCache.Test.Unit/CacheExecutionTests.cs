@@ -15,34 +15,15 @@ namespace CommonCache.Test.Unit
     [TestClass]
     public class CacheExecutionTests
     {
-        private static readonly List<LabUserData> s_labUsers = new List<LabUserData>();
-
-        private static async Task<LabUserData> GetTempLabUserDataAsync()
-        {
-            var api = new LabServiceApi();
-            var labUser = (await api.CreateTempLabUserAsync().ConfigureAwait(false)).User;
-            return new LabUserData(labUser.Upn, labUser.GetOrFetchPassword());
-        }
-
-        private static async Task<LabUserData> GetLabUserDataAsync(string upn)
-        {
-            var api = new LabServiceApi();
-            var labUser = (await api.GetLabResponseAsync(new UserQuery()).ConfigureAwait(false)).User;
-            return new LabUserData(labUser.Upn, labUser.GetOrFetchPassword());
-        }
+        private static readonly List<LabResponse> s_labUsers = new List<LabResponse>();
 
         [AssemblyInitialize]
         public static void AssemblyInit(TestContext testContext)
         {
-            // TODO: these other users throw MsalUiRequiredException invalid_grant.
-            // Are they MFA-required users?  What is different about them?
-            // s_labUsers.Add(GetLabUserData("idlab@msidlab2.onmicrosoft.com"));
-            // s_labUsers.Add(GetLabUserData("idlab@msidlab3.onmicrosoft.com"));
-            // "idlab@msidlab4.onmicrosoft.com"
-            s_labUsers.Add(GetLabUserDataAsync("idlab@msidlab4.onmicrosoft.com").GetAwaiter().GetResult());
-            //s_labUsers.Add(GetTempLabUserDataAsync().GetAwaiter().GetResult());
-            //s_labUsers.Add(GetTempLabUserDataAsync().GetAwaiter().GetResult());
-            //s_labUsers.Add(GetTempLabUserDataAsync().GetAwaiter().GetResult());
+            // Typical AAD user
+            s_labUsers.Add(LabUserHelper.GetDefaultUserAsync().GetAwaiter().GetResult());
+
+            // TODO: run some tests for ADFS and B2C users
         }
 
         [DataTestMethod]

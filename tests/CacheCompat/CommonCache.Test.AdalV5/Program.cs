@@ -52,16 +52,16 @@ namespace CommonCache.Test.AdalV5
                 {
                     try
                     {
-                        Console.WriteLine("Calling ATS with username: {0}", labUserData.Upn);
+                        Console.WriteLine("Calling ATS with username: {0}", labUserData.User.Upn);
                         var result = await authenticationContext.AcquireTokenSilentAsync(
                             resource,
                             app.ClientId,
-                            new UserIdentifier(labUserData.Upn, UserIdentifierType.RequiredDisplayableId)).ConfigureAwait(false);
+                            new UserIdentifier(labUserData.User.Upn, UserIdentifierType.RequiredDisplayableId)).ConfigureAwait(false);
 
                         Console.WriteLine($"got token for '{result.UserInfo.DisplayableId}' from the cache");
 
                         results.Add(new CacheExecutorAccountResult(
-                            labUserData.Upn,
+                            labUserData.User.Upn,
                             result.UserInfo.DisplayableId,
                             true));
                     }
@@ -70,17 +70,18 @@ namespace CommonCache.Test.AdalV5
                         var result = await authenticationContext.AcquireTokenAsync(
                                          resource,
                                          app.ClientId,
-                                         new UserPasswordCredential(labUserData.Upn, labUserData.Password)).ConfigureAwait(false);
+                                         new UserPasswordCredential(labUserData.User.Upn, labUserData.User.GetOrFetchPassword()))
+                            .ConfigureAwait(false);
 
                         if (string.IsNullOrWhiteSpace(result.AccessToken))
                         {
-                            results.Add(new CacheExecutorAccountResult(labUserData.Upn, string.Empty, false));
+                            results.Add(new CacheExecutorAccountResult(labUserData.User.Upn, string.Empty, false));
                         }
                         else
                         {
                             Console.WriteLine($"got token for '{result.UserInfo.DisplayableId}' without the cache");
                             results.Add(new CacheExecutorAccountResult(
-                                labUserData.Upn,
+                                labUserData.User.Upn,
                                 result.UserInfo.DisplayableId,
                                 false));
                         }
