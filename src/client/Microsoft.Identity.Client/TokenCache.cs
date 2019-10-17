@@ -58,7 +58,7 @@ namespace Microsoft.Identity.Client
         /// and <c>IConfidentialClientApplication.AppTokenCache</c> once the app is created.
         /// </summary>
         [Obsolete("The recommended way to get a cache is by using IClientApplicationBase.UserTokenCache or IClientApplicationBase.AppTokenCache")]
-        public TokenCache() : this((IServiceBundle)null, true)
+        public TokenCache() : this((IServiceBundle)null, false)
         {
         }
 

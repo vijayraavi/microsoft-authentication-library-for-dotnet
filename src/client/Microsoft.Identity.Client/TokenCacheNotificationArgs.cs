@@ -47,9 +47,9 @@ namespace Microsoft.Identity.Client
         public bool HasStateChanged { get; internal set; }
 
         /// <summary>
-        /// Indicates wheather the cache change occured in the <see cref="ClientApplicationBase.UserTokenCache" />
-        /// or in the <see cref="ConfidentialClientApplication.AppTokenCache"/>. The latter is used in Client Credential grant, 
-        /// i.e. <see cref="ConfidentialClientApplication.AcquireTokenForClient(System.Collections.Generic.IEnumerable{string})"/>
+        /// Indicates whether the cache change occured in the UserTokenCache
+        /// or in the AppTokenCache. The latter is used in Client Credential grant, 
+        /// which is not available on all platforms.
         /// </summary>
         public bool IsApplicationTokenCache { get; }
     }
